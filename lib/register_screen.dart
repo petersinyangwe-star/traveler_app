@@ -50,9 +50,12 @@
          'phone': _phoneController.text.trim(),
          'role': _selectedRole,
          'nrcNumber': _nrcController.text.trim(),
-         'passportNumber': _passportController.text.trim(),
        };
 
+       // Only add passport if it's NOT empty
+       if (_passportController.text.trim().isNotEmpty) {
+         body['passportNumber'] = _passportController.text.trim();
+       }
        if (_selectedRole == 'CUSTOMER') {
          body['location'] = _locationController.text.trim();
          body['reasonForHiring'] = _reasonController.text.trim();

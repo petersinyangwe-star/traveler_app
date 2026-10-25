@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "155106479809",
+    "project_id": "traveler-app-fcceb",
+    "storage_bucket": "traveler-app-fcceb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:155106479809:android:4221ca8d28d061fd6bce40",
+        "android_client_info": {
+          "package_name": "com.example.travelerapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-92Du2Ske62-RKJ6xn32USk6RejZQA9g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

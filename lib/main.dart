@@ -11,10 +11,14 @@ import 'package:path_provider/path_provider.dart';
 import 'glass_card.dart';
 import 'new_booking_screen.dart';
 import 'register_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const TravelerApp());
 }
 
@@ -63,6 +67,61 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
 
+  @override
+  void initState() {
+    super.initState();
+    _setupNotifications();
+  }
+
+  Future<void> _setupNotifications() async {
+    // 1. Request permission (especially for iOS)
+    NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted permission');
+    }
+
+    // 2. Get the device token
+    String? token = await FirebaseMessaging.instance.getToken();
+    print("🔥 FCM TOKEN: $token"); //  Copy this from your console!
+
+    // 3. Listen for foreground messages
+    // 3. Listen for foreground messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Got a message in the foreground!');
+      print('Message data: ${message.data}');
+
+      if (message.notification != null) {
+        // SHOW A SNACKBAR
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    message.notification!.title ?? 'New Notification',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(message.notification!.body ?? ''),
+                ],
+              ),
+              backgroundColor: Colors.blue[800],
+              duration: const Duration(seconds: 5),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    });
+  }
+
   Future<void> _login() async {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
@@ -86,6 +145,21 @@ class _LoginScreenState extends State<LoginScreen> {
               token: data['token'],
             ),
           ));
+
+
+          // Send FCM Token to Backend
+          String? token = await FirebaseMessaging.instance.getToken();
+          if (token != null) {
+            await http.post(
+              Uri.parse('http://localhost:8080/api/users/save-fcm-token'),
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ${data['token']}',
+              },
+              body: jsonEncode({'fcmToken': token}),
+            );
+          }
+
         }
       } else {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid credentials')));
@@ -141,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 backgroundColor: const Color(0xFF00C853),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               ),
-                              child: _isLoading
+                             child: _isLoading
                                   ? const CircularProgressIndicator(color: Colors.white)
                                   : const Text('LOGIN', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
                             ),
