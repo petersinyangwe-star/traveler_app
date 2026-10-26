@@ -13,6 +13,7 @@ import 'new_booking_screen.dart';
 import 'register_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'delivery_screen.dart';
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
@@ -638,100 +639,167 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
 
     if (validRoutes.isEmpty) return const Center(child: Text("No valid routes found."));
 
-    final displayRoutes = _selectedRoute != null ? [_selectedRoute] : validRoutes;
-    final firstRoute = displayRoutes.first;
-    final mapCenter = LatLng((firstRoute['pickupLat'] as num).toDouble(), (firstRoute['pickupLng'] as num).toDouble());
+    // 🚀 IF A ROUTE IS SELECTED, SHOW FULL SCREEN MAP
+    if (_selectedRoute != null) {
+      final route = _selectedRoute;
+      final pickup = LatLng((route['pickupLat'] as num).toDouble(), (route['pickupLng'] as num).toDouble());
+      final dropoff = LatLng((route['dropoffLat'] as num).toDouble(), (route['dropoffLng'] as num).toDouble());
 
-    final markers = <Marker>[];
-    for (var r in displayRoutes) {
-      markers.add(Marker(point: LatLng((r['pickupLat'] as num).toDouble(), (r['pickupLng'] as num).toDouble()), width: 40, height: 40, child: const Icon(Icons.location_on, color: Colors.blue, size: 40)));
-      markers.add(Marker(point: LatLng((r['dropoffLat'] as num).toDouble(), (r['dropoffLng'] as num).toDouble()), width: 40, height: 40, child: const Icon(Icons.location_on, color: Colors.green, size: 40)));
-    }
-
-    return Column(
-      children: [
-        SizedBox(
-          height: 300,
-          child: FlutterMap(
-            options: MapOptions(initialCenter: mapCenter, initialZoom: _selectedRoute != null ? 14.0 : 11.0),
-            children: [
-              TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', userAgentPackageName: 'com.example.traveler_app'),
-              MarkerLayer(markers: markers),
-              PolylineLayer(
-                polylines: [
-                  Polyline(
-                    points: _currentRoadPath.isNotEmpty ? _currentRoadPath : displayRoutes.map((r) => LatLng((r['pickupLat'] as num).toDouble(), (r['pickupLng'] as num).toDouble())).toList(),
-                    color: Colors.blue, strokeWidth: 5.0,
+      return Scaffold(
+        appBar: AppBar(
+          title: Text("${route['pickupLocation']} → ${route['dropoffLocation']}"),
+          backgroundColor: const Color(0xFF0D6EFD),
+          foregroundColor: Colors.white,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => setState(() { _selectedRoute = null; _currentRoadPath = []; }),
+          ),
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: _currentRoadPath.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : FlutterMap(
+                options: MapOptions(
+                  initialCenter: pickup,
+                  initialZoom: 12.0,
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.travelerapp',
+                  ),
+                  MarkerLayer(markers: [
+                    Marker(point: pickup, width: 40, height: 40, child: const Icon(Icons.location_on, color: Colors.blue, size: 40)),
+                    Marker(point: dropoff, width: 40, height: 40, child: const Icon(Icons.location_on, color: Colors.green, size: 40)),
+                  ]),
+                  PolylineLayer(
+                    polylines: [
+                      Polyline(points: _currentRoadPath, color: Colors.blue, strokeWidth: 5.0),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-        if (_selectedRoute != null)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => setState(() { _selectedRoute = null; _currentRoadPath = []; }),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Show All Routes'),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0D6EFD), foregroundColor: Colors.white),
+            ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Distance: ${route['distanceKm']} km", style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text("Duration: ${route['estimatedDurationMin']} min", style: const TextStyle(fontWeight: FontWeight.bold)),
+                ],
               ),
             ),
-          ),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: validRoutes.length,
-            itemBuilder: (context, i) {
-              final r = validRoutes[i];
-              return GestureDetector(
-                onTap: () => _selectRoute(r),
-                child: Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  margin: const EdgeInsets.only(bottom: 15),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(children: [const Icon(Icons.location_on, color: Color(0xFF0D6EFD)), const SizedBox(width: 10), Expanded(child: Text("${r['pickupLocation']} → ${r['dropoffLocation']}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)))]),
-                        const SizedBox(height: 10),
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text("Distance: ${r['distanceKm']} km", style: TextStyle(color: Colors.grey[600])), Text("Duration: ${r['estimatedDurationMin']} min", style: TextStyle(color: Colors.grey[600]))]),
-                        const SizedBox(height: 5),
-                        const Text("Click to view road path", style: TextStyle(color: Color(0xFF0D6EFD), fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+          ],
         ),
-      ],
+      );
+    }
+
+    // 🚀 IF NO ROUTE IS SELECTED, SHOW THE LIST
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: validRoutes.length,
+      itemBuilder: (context, i) {
+        final r = validRoutes[i];
+        return Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          margin: const EdgeInsets.only(bottom: 15),
+          child: ListTile(
+            onTap: () => _selectRoute(r),
+            leading: const Icon(Icons.location_on, color: Color(0xFF0D6EFD)),
+            title: Text("${r['pickupLocation']} → ${r['dropoffLocation']}", style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text("Distance: ${r['distanceKm']} km • ${r['estimatedDurationMin']} min"),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          ),
+        );
+      },
     );
   }
 
+  //  Function to fetch the real road path
   Future<void> _selectRoute(dynamic route) async {
-    setState(() { _selectedRoute = route; _currentRoadPath = []; });
+    setState(() {
+      _selectedRoute = route;
+      _currentRoadPath = [];
+    });
+
     try {
-      final url = Uri.parse('https://router.project-osrm.org/route/v1/driving/${route['pickupLng']},${route['pickupLat']};${route['dropoffLng']},${route['dropoffLat']}?overview=full&geometries=geojson');
+      final url = Uri.parse(
+          'https://router.project-osrm.org/route/v1/driving/${route['pickupLng']},${route['pickupLat']};${route['dropoffLng']},${route['dropoffLat']}?overview=full&geometries=geojson');
       final response = await http.get(url);
+
       if (response.statusCode == 200) {
         final geometry = jsonDecode(response.body)['routes'][0]['geometry']['coordinates'] as List;
         setState(() {
           _currentRoadPath = geometry.map((coord) => LatLng((coord[1] as num).toDouble(), (coord[0] as num).toDouble())).toList();
         });
+      } else {
+        throw Exception("Failed to load road path");
       }
-    } catch (e) { print(e); }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+      }
+      print("ROAD PATH ERROR: $e");
+    }
   }
+
+
 
   // --- DELIVERIES TAB ---
   Widget _buildDeliveriesTab() {
-    return const Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.inbox, size: 60, color: Colors.grey), SizedBox(height: 10), Text("No deliveries yet", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))]));
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('My Deliveries', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DeliveryScreen(token: widget.token),
+                    ),
+                  );
+                  if (result == true) {
+                    _fetchData(); // Refresh data if a delivery was created
+                  }
+                },
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: const Text('Send Package', style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0D6EFD)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
+
+          // Placeholder for the deliveries list
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            child: const Padding(
+              padding: EdgeInsets.all(40.0),
+              child: Column(
+                children: [
+                  Icon(Icons.inbox, size: 60, color: Colors.grey),
+                  SizedBox(height: 10),
+                  Text("No deliveries yet", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 5),
+                  Text("Tap 'Send Package' to create one.", style: TextStyle(color: Colors.grey)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
+
 
   // --- PROFILE TAB ---
   Widget _buildProfileTab() {
