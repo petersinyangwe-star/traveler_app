@@ -14,6 +14,7 @@ import 'register_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'delivery_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
@@ -35,13 +36,40 @@ class TravelerApp extends StatelessWidget {
           title: 'Traveler Car Hire',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0D6EFD)),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF00A8FF), // Electric Blue
+              brightness: Brightness.dark,       //  Force Dark Mode as default
+            ),
             useMaterial3: true,
-            brightness: Brightness.light,
+            fontFamily: GoogleFonts.poppins().fontFamily,
+            textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
+            scaffoldBackgroundColor: const Color(0xFF0A1128), // Deep Navy
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              foregroundColor: Colors.white,
+            ),
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: const Color(0xFF1C2541), // Darker input field
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF00A8FF), width: 2), // Glow on focus
+              ),
+            ),
           ),
           darkTheme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0D6EFD), brightness: Brightness.dark),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF0D6EFD),
+              brightness: Brightness.dark,
+            ),
             useMaterial3: true,
+            fontFamily: GoogleFonts.poppins().fontFamily,
+            textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
             scaffoldBackgroundColor: const Color(0xFF121212),
           ),
           themeMode: currentMode,
@@ -175,65 +203,134 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1000&auto=format&fit=crop'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                children: [
-                  const SizedBox(height: 40),
-                  GlassCard(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        children: [
-                          const Icon(Icons.directions_car, size: 50, color: Colors.white),
-                          const SizedBox(height: 10),
-                          const Text(
-                            'TRAVELER',
-                            style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 2),
-                          ),
-                          const SizedBox(height: 30),
-
-                          _buildGlassTextField(_usernameController, 'Username'),
-                          const SizedBox(height: 15),
-                          _buildGlassTextField(_passwordController, 'Password', obscureText: true),
-                          const SizedBox(height: 25),
-
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _login,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF00C853),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                             child: _isLoading
-                                  ? const CircularProgressIndicator(color: Colors.white)
-                                  : const Text('LOGIN', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
-                            ),
-                          ),
-
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterScreen()));
-                            },
-                            child: const Text("Don't have an account? Sign Up", style: TextStyle(color: Colors.white)),
-                          ),
-                        ],
+      backgroundColor: const Color(0xFF0A1128), // Deep Navy
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                // 🚀 Logo with a glow effect
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00A8FF).withOpacity(0.3),
+                        blurRadius: 40,
+                        spreadRadius: 10,
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                  child: Image.asset('assets/logo.png', height: 120),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'TRAVELER',
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 4,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Car hire and delivery, redefined.',
+                  style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                ),
+                const SizedBox(height: 40),
+
+                // 🚀 The Login Card
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131A33), // Slightly lighter navy for the card
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withOpacity(0.05)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Sign in',
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      const SizedBox(height: 30),
+
+                      // Username Field
+                      TextField(
+                        controller: _usernameController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: 'Username',
+                          labelStyle: TextStyle(color: Colors.grey),
+                          prefixIcon: Icon(Icons.person, color: Colors.grey),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Password Field
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          labelStyle: const TextStyle(color: Colors.grey),
+                          prefixIcon: const Icon(Icons.lock, color: Colors.grey),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      // Login Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 55,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _login,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF00A8FF), // Electric blue
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 10,
+                            shadowColor: const Color(0xFF00A8FF).withOpacity(0.5),
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text(
+                            'LOGIN',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                        ),
+                      ),
+
+                      // Sign Up Link
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterScreen()));
+                        },
+                        child: const Text(
+                          "Don't have an account? Sign Up",
+                          style: TextStyle(color: Color(0xFF00A8FF)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -294,6 +391,8 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
   bool _isLoading = true;
   dynamic _selectedRoute;
   List<LatLng> _currentRoadPath = [];
+  List<int> _favorites = [];
+
 
   @override
   void initState() {
@@ -339,8 +438,10 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Welcome Card
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            elevation: 5,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Row(
@@ -363,18 +464,48 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
             ),
           ),
           const SizedBox(height: 20),
+
+          //  STAT CARDS
           Row(
             children: [
-              Expanded(
-                child: InkWell(
-                  onTap: () async {
-                    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => NewBookingScreen(token: widget.token)));
-                    if (result == true) _fetchData();
-                  },
-                  child: Card(color: const Color(0xFF0D6EFD), child: const Padding(padding: EdgeInsets.all(20.0), child: Column(children: [Icon(Icons.add_circle_outline, color: Colors.white), SizedBox(height: 10), Text('New Booking', style: TextStyle(color: Colors.white))]))),
-                ),
-              ),
+              _buildStatCard("Vehicles", "${_vehicles.length}", Icons.directions_car, [const Color(0xFF667EEA), const Color(0xFF764BA2)]),
+              const SizedBox(width: 15),
+              _buildStatCard("Bookings", "${_bookings.length}", Icons.calendar_today, [const Color(0xFFF093FB), const Color(0xFFF5576C)]),
             ],
+          ),
+          const SizedBox(height: 15),
+          Row(
+            children: [
+              _buildStatCard("Routes", "${_routes.length}", Icons.alt_route, [const Color(0xFF4FACFE), const Color(0xFF00F2FE)]),
+              const SizedBox(width: 15),
+              _buildStatCard("Earnings", "K0", Icons.attach_money, [const Color(0xFF43E97B), const Color(0xFF38F9D7)]),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          //  NEW BOOKING BUTTON
+          SizedBox(
+            width: double.infinity,
+            height: 60,
+            child: ElevatedButton(
+              onPressed: () async {
+                final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => NewBookingScreen(token: widget.token)));
+                if (result == true) _fetchData();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0D6EFD),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                elevation: 5,
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add_circle_outline, color: Colors.white),
+                  SizedBox(width: 10),
+                  Text('New Booking', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 20),
           const Text('Recent Bookings', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -384,11 +515,13 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
               : ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: _bookings.length,
+            itemCount: _bookings.length > 3 ? 3 : _bookings.length,
             itemBuilder: (context, i) {
               final b = _bookings[i];
               return Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 child: ListTile(
+                  leading: const Icon(Icons.calendar_today, color: Color(0xFF0D6EFD)),
                   title: Text('${b['route']['pickupLocation']} → ${b['route']['dropoffLocation']}'),
                   subtitle: Text('Booking #${b['id']} - ${b['status']}'),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -397,6 +530,35 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, IconData icon, List<Color> gradient) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: gradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(color: gradient.first.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 5)),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: Colors.white, size: 28),
+            const SizedBox(height: 15),
+            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 5),
+            Text(title, style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.9))),
+          ],
+        ),
       ),
     );
   }
@@ -590,42 +752,152 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
 
   // --- VEHICLES TAB ---
   Widget _buildVehiclesTab() {
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 1, childAspectRatio: 1.3, crossAxisSpacing: 10, mainAxisSpacing: 10),
-      itemCount: _vehicles.length,
-      itemBuilder: (context, i) {
-        final v = _vehicles[i];
-        return Card(
-          clipBehavior: Clip.antiAlias,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: Column(
-            children: [
-              Expanded(
-                child: v['imageUrl'] != null && v['imageUrl'].toString().isNotEmpty
-                    ? Image.network(
-                  v['imageUrl'].toString().startsWith('http') ? v['imageUrl'] : "http://localhost:8080${v['imageUrl']}",
-                  fit: BoxFit.cover, width: double.infinity,
-                  errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[300], child: const Center(child: Icon(Icons.directions_car, size: 50))),
-                )
-                    : Container(color: Colors.grey[300], child: const Center(child: Icon(Icons.directions_car, size: 50))),
-              ),
-              ListTile(
-                title: Text("${v['make']} ${v['model']}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text("${v['plateNumber']} • K${v['pricePerDayZMW']}/day"),
-                trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(5)),
-                  child: Text(v['status'], style: const TextStyle(color: Colors.white, fontSize: 10)),
-                ),
-              ),
-            ],
-          ),
-        );
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _fetchData(); //  Reload data from the server
       },
+      child: GridView.builder(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 1,
+          childAspectRatio: 1.2,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 15,
+        ),
+        itemCount: _vehicles.length,
+        itemBuilder: (context, i) {
+          final v = _vehicles[i];
+          return Card(
+            clipBehavior: Clip.antiAlias,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            elevation: 5,
+            child: Column(
+              children: [
+                Expanded(
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Vehicle Image
+                      v['imageUrl'] != null && v['imageUrl'].toString().isNotEmpty
+                          ? Image.network(
+                        v['imageUrl'].toString().startsWith('http')
+                            ? v['imageUrl']
+                            : "http://localhost:8080${v['imageUrl']}",
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: Colors.grey[300],
+                          child: const Center(child: Icon(Icons.directions_car, size: 50)),
+                        ),
+                      )
+                          : Container(
+                        color: Colors.grey[300],
+                        child: const Center(child: Icon(Icons.directions_car, size: 50)),
+                      ),
+
+                      //  Favorite Icon (Tappable)
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (_favorites.contains(v['id'])) {
+                                _favorites.remove(v['id']);
+                              } else {
+                                _favorites.add(v['id']);
+                              }
+                            });
+                          },
+                          child: CircleAvatar(
+                            backgroundColor: Colors.white.withOpacity(0.9),
+                            radius: 18,
+                            child: Icon(
+                              _favorites.contains(v['id']) ? Icons.favorite : Icons.favorite_border,
+                              color: Colors.red,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      //  Status Badge
+                      Positioned(
+                        bottom: 10,
+                        left: 10,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: v['status'] == 'AVAILABLE'
+                                ? Colors.green
+                                : (v['status'] == 'IN_USE' ? Colors.orange : Colors.red),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 5,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            v['status'],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("${v['make']} ${v['model']}",
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          Text("K${v['pricePerDayZMW']}/day",
+                              style: const TextStyle(color: Color(0xFF0D6EFD), fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      Text("${v['plateNumber']} • ${v['capacity']} seats",
+                          style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => NewBookingScreen(token: widget.token),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0D6EFD),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          child: const Text('Rent Now', style: TextStyle(color: Colors.white)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
-
   // --- ROUTES TAB ---
   Widget _buildRoutesTab() {
     if (_routes.isEmpty) return const Center(child: Text("No routes available."));
@@ -639,7 +911,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
 
     if (validRoutes.isEmpty) return const Center(child: Text("No valid routes found."));
 
-    // 🚀 IF A ROUTE IS SELECTED, SHOW FULL SCREEN MAP
+    // IF A ROUTE IS SELECTED, SHOW FULL SCREEN MAP
     if (_selectedRoute != null) {
       final route = _selectedRoute;
       final pickup = LatLng((route['pickupLat'] as num).toDouble(), (route['pickupLng'] as num).toDouble());
@@ -697,7 +969,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
       );
     }
 
-    // 🚀 IF NO ROUTE IS SELECTED, SHOW THE LIST
+    //  IF NO ROUTE IS SELECTED, SHOW THE LIST
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: validRoutes.length,
@@ -1082,20 +1354,46 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(title: const Text('Traveler App'), backgroundColor: const Color(0xFF0D6EFD), foregroundColor: Colors.white),
       body: pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        selectedItemColor: const Color(0xFF0D6EFD),
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Bookings'),
-          BottomNavigationBarItem(icon: Icon(Icons.directions_car), label: 'Vehicles'),
-          BottomNavigationBarItem(icon: Icon(Icons.alt_route), label: 'Routes'),
-          BottomNavigationBarItem(icon: Icon(Icons.inbox), label: 'Deliveries'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
+      extendBody: true,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 10)),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(30),
+            child: BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() => _currentIndex = index);
+                //  Refresh data when switching to Vehicles tab
+                if (index == 2) {
+                  _fetchData();
+                }
+              },
+              selectedItemColor: const Color(0xFF0D6EFD),
+              unselectedItemColor: Colors.grey,
+              selectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+              unselectedLabelStyle: const TextStyle(fontSize: 10),
+              items: const [
+                BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
+                BottomNavigationBarItem(icon: Icon(Icons.calendar_today_rounded), label: 'Bookings'),
+                BottomNavigationBarItem(icon: Icon(Icons.directions_car_rounded), label: 'Vehicles'),
+                BottomNavigationBarItem(icon: Icon(Icons.alt_route_rounded), label: 'Routes'),
+                BottomNavigationBarItem(icon: Icon(Icons.inbox_rounded), label: 'Deliveries'),
+                BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
