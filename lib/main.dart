@@ -116,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // 2. Get the device token
     String? token = await FirebaseMessaging.instance.getToken();
-    print("🔥 FCM TOKEN: $token"); //  Copy this from your console!
+    print(" FCM TOKEN: $token"); //  Copy this from your console!
 
     // 3. Listen for foreground messages
     // 3. Listen for foreground messages
@@ -392,7 +392,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
   dynamic _selectedRoute;
   List<LatLng> _currentRoadPath = [];
   List<int> _favorites = [];
-
+  Map<String, dynamic> _companySettings = {};
 
   @override
   void initState() {
@@ -459,6 +459,35 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                       Text(widget.username, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     ],
                   ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          // About Us Section
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'About ${_companySettings['companyName'] ?? 'Traveler'}',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _companySettings['aboutUs'] ?? 'No description available.',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  if (_companySettings['foundedYear'] != null) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      'Founded in ${_companySettings['foundedYear']}',
+                      style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -1153,6 +1182,19 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
 
           const SizedBox(height: 20),
 
+          //  Send Feedback Button
+          ElevatedButton.icon(
+            onPressed: _showFeedbackDialog,
+            icon: const Icon(Icons.feedback_outlined),
+            label: const Text('Send Feedback'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(200, 45),
+            ),
+          ),
+          const SizedBox(height: 10),
+
           //  Change Password Button
           const SizedBox(height: 10),
           ElevatedButton.icon(
@@ -1342,14 +1384,14 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
     if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     final List<Widget> pages = [
-      _buildHomeTab(),
-      _buildBookingsTab(),
-      _buildVehiclesTab(),
-      _buildRoutesTab(),
-      _buildDeliveriesTab(),
-      _buildProfileTab(),
+      _buildHomeTab(),      // index 0
+      _buildBookingsTab(),  // index 1
+      _buildHistoryTab(),   // index 2
+      _buildVehiclesTab(),  // index 3
+      _buildRoutesTab(),    // index 4
+      _buildDeliveriesTab(),// index 5
+      _buildProfileTab(),   // index 6
     ];
-
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(title: const Text('Traveler App'), backgroundColor: const Color(0xFF0D6EFD), foregroundColor: Colors.white),
@@ -1374,8 +1416,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
               currentIndex: _currentIndex,
               onTap: (index) {
                 setState(() => _currentIndex = index);
-                //  Refresh data when switching to Vehicles tab
-                if (index == 2) {
+                if (index == 3) { // 🚀 Refresh on Vehicles tab (now index 3)
                   _fetchData();
                 }
               },
@@ -1386,6 +1427,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
               items: const [
                 BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
                 BottomNavigationBarItem(icon: Icon(Icons.calendar_today_rounded), label: 'Bookings'),
+                BottomNavigationBarItem(icon: Icon(Icons.history_rounded), label: 'History'),
                 BottomNavigationBarItem(icon: Icon(Icons.directions_car_rounded), label: 'Vehicles'),
                 BottomNavigationBarItem(icon: Icon(Icons.alt_route_rounded), label: 'Routes'),
                 BottomNavigationBarItem(icon: Icon(Icons.inbox_rounded), label: 'Deliveries'),
@@ -1482,6 +1524,155 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
               ],
             );
           },
+        );
+      },
+    );
+  }
+  //=============================================
+  //  FEEDBACK DIALOG
+  //=============================================
+
+  void _showFeedbackDialog() {
+    final controller = TextEditingController();
+    bool isSubmitting = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return AlertDialog(
+              title: const Text('Send Feedback'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Tell us what we can improve. This cannot be edited after submission.',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: controller,
+                    maxLines: 4,
+                    maxLength: 1000,
+                    decoration: const InputDecoration(
+                      hintText: 'Your suggestion...',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSubmitting ? null : () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: isSubmitting
+                      ? null
+                      : () async {
+                    final message = controller.text.trim();
+                    if (message.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please write something first')),
+                      );
+                      return;
+                    }
+
+                    setModalState(() => isSubmitting = true);
+
+                    try {
+                      final res = await http.post(
+                        Uri.parse('http://localhost:8080/api/feedback'),
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': 'Bearer ${widget.token}',
+                        },
+                        body: jsonEncode({'message': message}),
+                      );
+
+                      if (res.statusCode == 200) {
+                        if (mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Feedback sent! Thank you.'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      } else {
+                        throw Exception(res.body);
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                        );
+                      }
+                    } finally {
+                      if (mounted) setModalState(() => isSubmitting = false);
+                    }
+                  },
+                  child: isSubmitting
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                      : const Text('Submit'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+  Widget _buildHistoryTab() {
+    final history = _bookings.where((b) => b['status'] == 'COMPLETED' || b['status'] == 'CANCELLED').toList();
+
+    if (history.isEmpty) {
+      return const Center(child: Text("No completed trips yet."));
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: history.length,
+      itemBuilder: (context, i) {
+        final b = history[i];
+        final isPaid = b['paymentStatus'] == 'PAID';
+        return Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          margin: const EdgeInsets.only(bottom: 15),
+          child: ListTile(
+            leading: Icon(
+              b['status'] == 'COMPLETED' ? Icons.check_circle : Icons.cancel,
+              color: b['status'] == 'COMPLETED' ? Colors.green : Colors.red,
+            ),
+            title: Text('${b['route']['pickupLocation']} → ${b['route']['dropoffLocation']}'),
+            subtitle: Text('Booking #${b['id']} • ${b['status']}'),
+            trailing: isPaid
+                ? IconButton(
+              icon: const Icon(Icons.file_download, color: Color(0xFF0D6EFD)),
+              onPressed: () async {
+                try {
+                  final url = Uri.parse('http://localhost:8080/api/bookings/${b['id']}/invoice');
+                  final response = await http.get(url, headers: {'Authorization': 'Bearer ${widget.token}'});
+                  if (response.statusCode == 200) {
+                    final dir = await getTemporaryDirectory();
+                    final file = File('${dir.path}/invoice_${b['id']}.pdf');
+                    await file.writeAsBytes(response.bodyBytes);
+                    await OpenFile.open(file.path);
+                  }
+                } catch (e) {
+                  if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                }
+              },
+            )
+                : null,
+          ),
         );
       },
     );
